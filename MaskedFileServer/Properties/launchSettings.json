@@ -13,7 +13,6 @@
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "Expiration_Term": "90",
         "Expiratoin_Term": "90",
         "File_Path": "\\\\AAWS01W6\\D$\\sfs-share\\",
         "ASPNETCORE_ENVIRONMENT": "Development",

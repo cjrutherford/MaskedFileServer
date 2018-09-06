@@ -1,7 +1,8 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaskedFileServer", "MaskedFileServer\MaskedFileServer.csproj", "{4AA70981-15B4-4564-AAA2-56AC3272E19B}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaskedFileServer", "MaskedFileServer\MaskedFileServer.csproj", "{4AA70981-15B4-4564-AAA2-56AC3272E19B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,5 +14,11 @@ Global
 		{4AA70981-15B4-4564-AAA2-56AC3272E19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4AA70981-15B4-4564-AAA2-56AC3272E19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4AA70981-15B4-4564-AAA2-56AC3272E19B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7BA20AAD-C2E8-418A-9CBB-4B1F609F3106}
 	EndGlobalSection
 EndGlobal
