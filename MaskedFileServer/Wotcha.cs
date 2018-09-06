@@ -4,24 +4,42 @@ using System.IO;
 
 namespace MaskedFileServer
 {
-    public static class Wotcha
+    public  class Wotcha 
     {
-        public static List<FileRecord> FileList;
+        public List<FileRecord> FileList;
+        public bool DeleteOnExpiry { get; set; }
+        public int Term { get; set; }
 
-        public static void Initialize(string _filePath = "//Files//"){
+
+        public Wotcha(string _filePath = "//Files//", bool _deletionPolicy = false, int _defaultTerm = 90){
+            FileList = new List<FileRecord>();
             FileSystemWatcher fsw = new FileSystemWatcher(_filePath, "*.*");
-            fsw.Created += new FileSystemEventHandler(onCreate);
-            fsw.Deleted += new FileSystemEventHandler(onDelete);
+            DirectoryInfo di = new DirectoryInfo(_filePath);
+            var files = di.GetFiles();
+            foreach(var file in files)
+            {
+                FileRecord f = new FileRecord(file.FullName, _defaultTerm, _deletionPolicy);
+                FileList.Add(f);
+            }
+            fsw.Created += new FileSystemEventHandler(OnCreate);
+            fsw.Deleted += new FileSystemEventHandler(OnDelete);
+            DeleteOnExpiry = _deletionPolicy;
+            Term =  _defaultTerm;
+
         }
 
-        private static void onDelete(object sender, FileSystemEventArgs e)
+        private  void OnDelete(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            FileRecord rec = FileList.Find(x => x.Path == e.FullPath);
+            Console.WriteLine($"Removing {rec.Path} from the File List");
+            FileList.Remove(rec);
         }
 
-        private static void onCreate(object sender, FileSystemEventArgs e)
+        private  void OnCreate(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            FileRecord rec = new FileRecord(e.FullPath, Term, DeleteOnExpiry);
+            FileList.Add(rec);
+            Console.WriteLine($"New File Found, Adding {e.FullPath} to the list with an ID of {rec.Id}");
         }
     }
 }

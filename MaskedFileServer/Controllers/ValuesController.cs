@@ -7,13 +7,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace MaskedFileServer.Controllers
 {
     [Route("api/[controller]")]
-    public class ValuesController : Controller
+    public class ValuesController : ControllerBase
     {
+        public Wotcha wotcha { get; set; }
+        public ValuesController(Wotcha w)
+        {
+            wotcha = w;
+        }
         // GET api/values
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<FileRecord> Get()
         {
-            return new string[] { "value1", "value2" };
+            //String[] stringList = new string[wotcha.FileList.Count];
+            //for(int i = 0; i < wotcha.FileList.Count; i++)
+            //{
+            //    stringList[i] = $"Path: {wotcha.FileList[i].Path} /n ID: {wotcha.FileList[i].Id}";
+            //}
+            //return stringList;
+            return wotcha.FileList;
         }
 
         // GET api/values/5

@@ -23,7 +23,12 @@ namespace MaskedFileServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            String FilePaths = Environment.GetEnvironmentVariable("File_Path");
+            bool DeleteOnExpiry = Environment.GetEnvironmentVariable("Delete_On_Expiry") == "TRUE" ? true : false;
+            Int32.TryParse(Environment.GetEnvironmentVariable("Expiration_Term"), out int Term);
+
             services.AddMvc();
+            services.AddSingleton<Wotcha>(o => new Wotcha(FilePaths, DeleteOnExpiry, Term));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

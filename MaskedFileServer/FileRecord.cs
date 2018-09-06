@@ -10,10 +10,12 @@ namespace MaskedFileServer
 
         public FileRecord(string _path, int _term = 90, bool _deletionPolicy = false)
         {
-            Id = new Guid().ToString();
+            Id = Guid.NewGuid().ToString();
             Path = _path;
-            ExpirationDate = new DateTime().AddDays(_term);
+            DateTime today = DateTime.Now;
+            ExpirationDate = today.AddDays(_term);
             DeleteOnExpiry = _deletionPolicy;
+            Console.WriteLine($"Created File Record for {_path}.");
         }
     }
 }
