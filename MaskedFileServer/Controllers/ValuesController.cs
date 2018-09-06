@@ -9,7 +9,9 @@ namespace MaskedFileServer.Controllers
 {
     public class ValuesController : ControllerBase
     {
+#pragma warning disable IDE1006 // Naming Styles
         public Wotcha wotcha { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
         public ValuesController(Wotcha w)
         {
             wotcha = w;
