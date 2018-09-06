@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MaskedFileServer.Controllers
 {
-    [Route("api/[controller]")]
     public class ValuesController : ControllerBase
     {
         public Wotcha wotcha { get; set; }
@@ -16,6 +16,7 @@ namespace MaskedFileServer.Controllers
         }
         // GET api/values
         [HttpGet]
+        [Route("list")]
         public IEnumerable<FileRecord> Get()
         {
             //String[] stringList = new string[wotcha.FileList.Count];
@@ -29,27 +30,20 @@ namespace MaskedFileServer.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        [Route("file/{id}")]
+        public async Task<FileResult> Get(string id)
         {
-            return "value";
-        }
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            FileRecord fr = wotcha.FileList.Find(x => x.Id == id);
+            string[] filePieces = fr.Path.Split('\\');
+            string fileName = filePieces[filePieces.Length - 1];
+            MemoryStream memory = new MemoryStream();
+            using(FileStream fs = new FileStream(fr.Path, FileMode.Open))
+            {
+                await fs.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            Console.WriteLine($"Sending File {fileName} to user Via HTTP.");
+            return File(memory, "application/pdf", fileName);
         }
     }
 }

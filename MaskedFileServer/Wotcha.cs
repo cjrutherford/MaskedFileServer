@@ -23,6 +23,7 @@ namespace MaskedFileServer
             }
             fsw.Created += new FileSystemEventHandler(OnCreate);
             fsw.Deleted += new FileSystemEventHandler(OnDelete);
+            fsw.EnableRaisingEvents = true;
             DeleteOnExpiry = _deletionPolicy;
             Term =  _defaultTerm;
 
