@@ -4,13 +4,19 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="Quartz" Version="3.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.1.2" />
+    <PackageReference Include="SQLite.Native" Version="3.12.3" />
+    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3.netstandard11" Version="1.1.11" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,5 +26,15 @@
   <ItemGroup>
     <Content Remove="app.config" />
     <Content Remove="Wotcha.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="localStorage.sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="localStorage.sqlite">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

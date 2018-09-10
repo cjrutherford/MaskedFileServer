@@ -14,7 +14,7 @@
       "launchUrl": "api/values",
       "environmentVariables": {
         "Expiratoin_Term": "90",
-        "File_Path": "\\\\AAWS01W6\\D$\\sfs-share\\",
+        "File_Path": "C:\\Users\\Rutherfordc\\Desktop\\Watches",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Delete_On_Expiry": "TRUE"
       }
