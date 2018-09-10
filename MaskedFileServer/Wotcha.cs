@@ -1,9 +1,10 @@
-﻿using Microsoft.Data.Sqlite;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Timers;
-using SQLitePCL;
+
 
 
 namespace MaskedFileServer
@@ -15,20 +16,22 @@ namespace MaskedFileServer
         public int Term { get; set; }
         private Timer CleanupTimer; //cleans up files
         private Timer DataTimer { get; set; }
+        public String ConnString { get; set; }
 
 
 
-        public Wotcha(string _filePath = @"./Share", bool _deletionPolicy = false, int _defaultTerm = 90){
+        public Wotcha(string _ConnString, string _filePath = @"./Share", bool _deletionPolicy = false, int _defaultTerm = 90){
             FileList = new List<FileRecord>();
+            ConnString = _ConnString;
             FileSystemWatcher fsw = new FileSystemWatcher(_filePath, "*.*");
             DirectoryInfo di = new DirectoryInfo(_filePath);
-            using(SqliteConnection conn = new SqliteConnection(@"Data Source=./localStorage.sqlite"))
+            using(SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
                 string sql = "SELECT * FROM FILES";
-                using (SqliteCommand cmd = new SqliteCommand(sql, conn))
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    using (SqliteDataReader read = cmd.ExecuteReader())
+                    using (SqlDataReader read = cmd.ExecuteReader())
                     {
                         while (read.Read())
                         {
@@ -52,12 +55,13 @@ namespace MaskedFileServer
                 {
                     FileRecord f = new FileRecord(file.FullName, file.CreationTime, _defaultTerm, _deletionPolicy);
                     FileList.Add(f);
-                    AddFileToSqlite(f);
+                    AddFileToSql(f, ConnString);
                 }
 
             }
             fsw.Created += new FileSystemEventHandler(OnCreate);
             fsw.Deleted += new FileSystemEventHandler(OnDelete);
+            fsw.Renamed += new RenamedEventHandler(onRename);
             fsw.EnableRaisingEvents = true;
             DeleteOnExpiry = _deletionPolicy;
             Term =  _defaultTerm;
@@ -68,20 +72,48 @@ namespace MaskedFileServer
 
         }
 
-        private static void AddFileToSqlite(FileRecord f)
+        private void onRename(object sender, RenamedEventArgs e)
         {
-            using (SqliteConnection conn = new SqliteConnection(@"Data Source=./localStorage.sqlite"))
+            FileRecord rec = FileList.Find(x => x.Path == e.OldFullPath);
+            using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
-                using (SqliteCommand cmd = new SqliteCommand())
+                using (SqlCommand cmd = new SqlCommand())
                 {
-                    cmd.CommandText = $"INSERT INTO FILES(Id, Path, DeleteOnExpiry, ExpirationDate, CreationTime) values(@Id, @Path, @dox, @ed, @ct)";
+                    cmd.CommandText = $"UPDATE FILE SET Path=@path1 where InternalId=@Id";
+                    cmd.Parameters.Add("@path1", SqlDbType.Text);
+                    cmd.Parameters.Add("@Id", SqlDbType.Text);
+                    cmd.Parameters["@path1"].Value = e.FullPath;
+                    cmd.Parameters["@Id"].Value = rec.Id;
+                    cmd.Connection = conn;
+                    cmd.Prepare();
+                    try
+                    {
+                        var result = cmd.ExecuteReader();
+
+                    }
+                    catch (SqlException er)
+                    {
+                        Console.WriteLine(er.ToString());
+                    }
+                }
+            }
+        }
+
+        private static void AddFileToSql(FileRecord f, String ConnString)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cmd.CommandText = $"INSERT INTO FILES(InternalId, Path, DeleteOnExpiry, ExpirationDate, CreationTime) values(@Id, @Path, @dox, @ed, @ct)";
                     //{(string) f.Id}, {f.Path}, {f.DeleteOnExpiry}, {f.ExpirationDate}, {f.CreationTime}
-                    cmd.Parameters.Add("@Id", SqliteType.Text);
-                    cmd.Parameters.Add("@Path", SqliteType.Text);
-                    cmd.Parameters.Add("@dox", SqliteType.Integer);
-                    cmd.Parameters.Add("@ed", SqliteType.Text);
-                    cmd.Parameters.Add("@ct", SqliteType.Text);
+                    cmd.Parameters.Add("@Id", SqlDbType.Text);
+                    cmd.Parameters.Add("@Path", SqlDbType.Text);
+                    cmd.Parameters.Add("@dox", SqlDbType.Int);
+                    cmd.Parameters.Add("@ed", SqlDbType.Text);
+                    cmd.Parameters.Add("@ct", SqlDbType.Text);
                     cmd.Parameters["@Id"].Value = f.Id;
                     cmd.Parameters["@Path"].Value = f.Path;
                     cmd.Parameters["@dox"].Value = f.DeleteOnExpiry == true ? 1 : 0;
@@ -94,7 +126,7 @@ namespace MaskedFileServer
                         var result = cmd.ExecuteNonQuery();
                         Console.WriteLine(result.ToString());
                     }
-                    catch (SqliteException e)
+                    catch (SqlException e)
                     {
                         Console.WriteLine(e.ToString());
                     }
@@ -121,18 +153,18 @@ namespace MaskedFileServer
             FileRecord rec = FileList.Find(x => x.Path == e.FullPath);
             Console.WriteLine($"Removing {rec.Path} from the File List");
             FileList.Remove(rec);
-            RemoveFromSqlite(rec);
+            RemoveFromSql(rec, ConnString);
         }
 
-        private static void RemoveFromSqlite(FileRecord rec)
+        private static void RemoveFromSql(FileRecord rec, String ConnString)
         {
-            using (SqliteConnection conn = new SqliteConnection(@"Data Source=./localStorage.sqlite"))
+            using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
-                using (SqliteCommand cmd = new SqliteCommand())
+                using (SqlCommand cmd = new SqlCommand())
                 {
                     cmd.CommandText = $"DELETE FROM FILES WHERE Path=@Path";
-                    cmd.Parameters.Add("@Path", SqliteType.Text);
+                    cmd.Parameters.Add("@Path", SqlDbType.Text);
                     cmd.Parameters["@Path"].Value = rec.Path;
                     cmd.Connection = conn;
                     cmd.Prepare();
@@ -141,7 +173,7 @@ namespace MaskedFileServer
                         var result = cmd.ExecuteNonQuery();
                         Console.WriteLine(result.ToString());
                     }
-                    catch (SqliteException ex)
+                    catch (SqlException ex)
                     {
                         Console.WriteLine(ex.ToString());
                     }
@@ -153,7 +185,7 @@ namespace MaskedFileServer
         private  void OnCreate(object sender, FileSystemEventArgs e)
         {
             FileRecord rec = new FileRecord(e.FullPath, DateTime.Now, Term, DeleteOnExpiry);
-            AddFileToSqlite(rec);
+            AddFileToSql(rec, ConnString);
             FileList.Add(rec);
             Console.WriteLine($"New File Found, Adding {e.FullPath} to the list with an ID of {rec.Id}");
         }

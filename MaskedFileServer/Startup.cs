@@ -29,7 +29,7 @@ namespace MaskedFileServer
             Int32.TryParse(Environment.GetEnvironmentVariable("Expiration_Term"), out int Term);
 
             services.AddMvc();
-            services.AddSingleton<Wotcha>(o => new Wotcha(FilePaths, DeleteOnExpiry, Term));
+            services.AddSingleton<Wotcha>(o => new Wotcha(@"Data Source = (localdb)\MSSQLLocalDB; Initial Catalog = C:\USERS\THERE\DOCUMENTS\GITHUB\MASKEDFILESERVER\MASKEDFILESERVER\FILES.MDF; Integrated Security = True; Connect Timeout = 30; Encrypt = False; TrustServerCertificate = False; ApplicationIntent = ReadWrite; MultiSubnetFailover = False", FilePaths, DeleteOnExpiry, Term));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

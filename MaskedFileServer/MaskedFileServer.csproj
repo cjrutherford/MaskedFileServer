@@ -29,10 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="files.mdf" />
     <None Remove="localStorage.sqlite" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="files.mdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="localStorage.sqlite">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
