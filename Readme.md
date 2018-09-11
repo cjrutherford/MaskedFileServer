@@ -12,3 +12,6 @@ This is the number of days that files should be available prior to automatic del
 
 ### Delete_On_Expiry
 This is simply a Boolean that determines if files should be deleted on expiration. 
+
+### ConnectionString
+This is the Connection String for the SQL Server database that provides persistence. Please be sure to create the DB as Files and use the `FileDB-FileRecord-Create.sql` to create the table. The App will handle the rest.
