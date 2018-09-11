@@ -14,7 +14,8 @@
       "launchUrl": "api/values",
       "environmentVariables": {
         "Expiratoin_Term": "90",
-        "File_Path": "\\\\AAWS01W6\\D$\\sfs-share\\",
+        "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Files;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False",
+        "File_Path": "C:\\Users\\rutherfordc\\Desktop\\watches",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Delete_On_Expiry": "TRUE"
       }

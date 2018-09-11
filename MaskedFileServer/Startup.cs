@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,9 +27,10 @@ namespace MaskedFileServer
             String FilePaths = Environment.GetEnvironmentVariable("File_Path");
             bool DeleteOnExpiry = Environment.GetEnvironmentVariable("Delete_On_Expiry") == "TRUE" ? true : false;
             Int32.TryParse(Environment.GetEnvironmentVariable("Expiration_Term"), out int Term);
+            String ConString = Environment.GetEnvironmentVariable("ConnectionString");
 
             services.AddMvc();
-            services.AddSingleton<Wotcha>(o => new Wotcha(FilePaths, DeleteOnExpiry, Term));
+            services.AddSingleton<Wotcha>(o => new Wotcha(ConString, FilePaths, DeleteOnExpiry, Term));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
