@@ -101,7 +101,8 @@ namespace MaskedFileServer
         {
 
             //TODO:// Fix issue where Find call does not return a file.
-            FileRecord rec = FileList.Find(x => x.Path.ToString() == e.OldFullPath.ToString());
+            FileRecord rec = FileList.Find(x => x.Path == e.OldFullPath);
+            FileList.Remove(rec);
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
@@ -125,6 +126,8 @@ namespace MaskedFileServer
                     }
                 }
             }
+            rec.Path = e.FullPath;
+            FileList.Add(rec);
         }
 
         private static void AddFileToSql(FileRecord f, String ConnString)
