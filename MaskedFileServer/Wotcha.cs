@@ -28,7 +28,7 @@ namespace MaskedFileServer
             using(SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
-                string sql = "SELECT * FROM FILES";
+                string sql = "SELECT * FROM Files..FileRecord";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader read = cmd.ExecuteReader())
@@ -120,7 +120,7 @@ namespace MaskedFileServer
                     cmd.Parameters["@ed"].Value = f.ExpirationDate;
                     cmd.Parameters["@ct"].Value = f.CreationTime;
                     cmd.Connection = conn;
-                    cmd.Prepare();
+                    //cmd.Prepare();
                     try
                     {
                         var result = cmd.ExecuteNonQuery();

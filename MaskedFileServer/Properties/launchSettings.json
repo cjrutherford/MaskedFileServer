@@ -14,7 +14,8 @@
       "launchUrl": "api/values",
       "environmentVariables": {
         "Expiratoin_Term": "90",
-        "File_Path": "C:\\Users\\there\\Desktop\\mfs\\",
+        "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Files;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False",
+        "File_Path": "C:\\Users\\there\\OneDrive\\Desktop\\mfs",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Delete_On_Expiry": "TRUE"
       }

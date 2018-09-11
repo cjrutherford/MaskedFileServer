@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <Content Include="files.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="localStorage.sqlite">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
