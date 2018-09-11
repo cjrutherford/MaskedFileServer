@@ -5,11 +5,12 @@ namespace MaskedFileServer
     {
         public String Id {get;set;}
         public String Path {get;set;}
+        public int dbId { get; set; }
         public bool DeleteOnExpiry{get;set;}
         public DateTime ExpirationDate{get;set;}
         public DateTime CreationTime { get; set; }
 
-        public FileRecord(string _path, DateTime creationTime, int _term = 90, bool _deletionPolicy = false, string _id = "")
+        public FileRecord(string _path,  DateTime creationTime, int dbId = 0, int _term = 90, bool _deletionPolicy = false, string _id = "")
         {
             if(_id != "")
             {

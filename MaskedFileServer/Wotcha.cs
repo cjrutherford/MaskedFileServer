@@ -35,11 +35,12 @@ namespace MaskedFileServer
                     {
                         while (read.Read())
                         {
-                            String Id = read["Id"].ToString();
+                            String Id = read["InternalId"].ToString();
                             String pth = read["Path"].ToString();
+                            int dbId = (int)read["Id"];
                             DateTime ct = DateTime.Parse(read["CreationTime"].ToString());
-                            bool dox = (Int64)read["DeleteOnExpiry"] == 1 ? true : false;
-                            FileList.Add(new FileRecord(pth, ct, 90, dox, Id));
+                            bool dox = (bool)read["DeleteOnExpiry"];
+                            FileList.Add(new FileRecord(pth, ct, dbId,  90, dox, Id));
                         }
                     }
                 }
@@ -53,9 +54,11 @@ namespace MaskedFileServer
                 }
                 else
                 {
-                    FileRecord f = new FileRecord(file.FullName, file.CreationTime, _defaultTerm, _deletionPolicy);
-                    FileList.Add(f);
+                    FileRecord f = new FileRecord(file.FullName, file.CreationTime, 0, _defaultTerm, _deletionPolicy);
                     AddFileToSql(f, ConnString);
+                    int dbId = getFileIdFromSql(f.Path);
+                    f.dbId = dbId;
+                    FileList.Add(f);
                 }
 
             }
@@ -72,21 +75,45 @@ namespace MaskedFileServer
 
         }
 
+        private int getFileIdFromSql(string path)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                conn.Open();
+                string sql = "SELECT * FROM Files..FileRecord where Path=@path";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@path", SqlDbType.NVarChar);
+                    cmd.Parameters["@path"].Value = path;
+                    using (SqlDataReader read = cmd.ExecuteReader())
+                    {
+                        while (read.Read())
+                        {
+                            return (int)read["Id"];
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
         private void onRename(object sender, RenamedEventArgs e)
         {
-            FileRecord rec = FileList.Find(x => x.Path == e.OldFullPath);
+
+            //TODO:// Fix issue where Find call does not return a file.
+            FileRecord rec = FileList.Find(x => x.Path.ToString() == e.OldFullPath.ToString());
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand())
                 {
-                    cmd.CommandText = $"UPDATE FILE SET Path=@path1 where InternalId=@Id";
-                    cmd.Parameters.Add("@path1", SqlDbType.Text);
-                    cmd.Parameters.Add("@Id", SqlDbType.Text);
+                    cmd.CommandText = $"UPDATE Files..FileRecord SET Path=@path1 where Id=@Id";
+                    cmd.Parameters.Add("@path1", SqlDbType.NVarChar);
+                    cmd.Parameters.Add("@Id", SqlDbType.Int);
                     cmd.Parameters["@path1"].Value = e.FullPath;
-                    cmd.Parameters["@Id"].Value = rec.Id;
+                    cmd.Parameters["@Id"].Value = rec.dbId;
                     cmd.Connection = conn;
-                    cmd.Prepare();
+                    //cmd.Prepare();
                     try
                     {
                         var result = cmd.ExecuteReader();
@@ -107,13 +134,13 @@ namespace MaskedFileServer
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand())
                 {
-                    cmd.CommandText = $"INSERT INTO FILES(InternalId, Path, DeleteOnExpiry, ExpirationDate, CreationTime) values(@Id, @Path, @dox, @ed, @ct)";
+                    cmd.CommandText = $"INSERT INTO Files..FileRecord(InternalId, Path, DeleteOnExpiry, ExpirationDate, CreationTime) values(@Id, @Path, @dox, @ed, @ct)";
                     //{(string) f.Id}, {f.Path}, {f.DeleteOnExpiry}, {f.ExpirationDate}, {f.CreationTime}
-                    cmd.Parameters.Add("@Id", SqlDbType.Text);
-                    cmd.Parameters.Add("@Path", SqlDbType.Text);
+                    cmd.Parameters.Add("@Id", SqlDbType.NVarChar);
+                    cmd.Parameters.Add("@Path", SqlDbType.NVarChar);
                     cmd.Parameters.Add("@dox", SqlDbType.Int);
-                    cmd.Parameters.Add("@ed", SqlDbType.Text);
-                    cmd.Parameters.Add("@ct", SqlDbType.Text);
+                    cmd.Parameters.Add("@ed", SqlDbType.DateTime);
+                    cmd.Parameters.Add("@ct", SqlDbType.DateTime);
                     cmd.Parameters["@Id"].Value = f.Id;
                     cmd.Parameters["@Path"].Value = f.Path;
                     cmd.Parameters["@dox"].Value = f.DeleteOnExpiry == true ? 1 : 0;
@@ -163,11 +190,11 @@ namespace MaskedFileServer
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand())
                 {
-                    cmd.CommandText = $"DELETE FROM FILES WHERE Path=@Path";
-                    cmd.Parameters.Add("@Path", SqlDbType.Text);
+                    cmd.CommandText = $"DELETE FROM Files..FileRecord WHERE Path=@Path";
+                    cmd.Parameters.Add("@Path", SqlDbType.NVarChar);
                     cmd.Parameters["@Path"].Value = rec.Path;
                     cmd.Connection = conn;
-                    cmd.Prepare();
+                    //cmd.Prepare();
                     try
                     {
                         var result = cmd.ExecuteNonQuery();
@@ -184,8 +211,10 @@ namespace MaskedFileServer
 
         private  void OnCreate(object sender, FileSystemEventArgs e)
         {
-            FileRecord rec = new FileRecord(e.FullPath, DateTime.Now, Term, DeleteOnExpiry);
+            FileRecord rec = new FileRecord(e.FullPath, DateTime.Now, 0, Term, DeleteOnExpiry);
             AddFileToSql(rec, ConnString);
+            int dbId = getFileIdFromSql(rec.Path);
+            rec.dbId = dbId;
             FileList.Add(rec);
             Console.WriteLine($"New File Found, Adding {e.FullPath} to the list with an ID of {rec.Id}");
         }
